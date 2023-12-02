@@ -42,6 +42,7 @@ def main() -> None:
     # print(games)
 
     ids: typing.List[int] = []
+    powers: typing.List[int] = []
     for game_id, game in games.items():
         if all(
             (gs.get("red", 0) <= AMOUNT_RED and gs.get("blue", 0) <= AMOUNT_BLUE and gs.get("green", 0) <= AMOUNT_GREEN)
@@ -49,7 +50,14 @@ def main() -> None:
         ):
             ids.append(game_id)
 
+        maxs = [max(gs.get(color, 0) for gs in game) for color in ["red", "green", "blue"]]
+        p = 1
+        for m in maxs:
+            p *= m
+        powers.append(p)
+
     print(sum(ids))
+    print(sum(powers))
 
 
 if __name__ == "__main__":

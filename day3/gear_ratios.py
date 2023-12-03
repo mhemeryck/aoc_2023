@@ -20,7 +20,7 @@ def neighbor_has_symbol(lines: typing.List[str], i: int, j: int, max_i: int, max
     if j > 1:
         indices.append((i, j - 1))
     if j < max_j - 1:
-        indices.append((i - 1, j + 1))
+        indices.append((i, j + 1))
     # below row
     if i < max_i - 1:
         if j > 1:
@@ -38,8 +38,9 @@ def main() -> None:
 
     number = ""
     has_symbol = False
-    s = 0
     max_i = len(lines)
+    valid = []
+    s = 0
     for i, line in enumerate(lines):
         max_j = len(line)
         for j, el in enumerate(line):
@@ -53,11 +54,13 @@ def main() -> None:
                 has_symbol |= neighbor_has_symbol(lines, i, j, max_i, max_j)
             # at the end of a number
             elif not el.isdigit() and number:
-                has_symbol |= neighbor_has_symbol(lines, i, j, max_i, max_j)
                 if has_symbol:
                     # print(number)
-                    s += int(number)
-                print(has_symbol, number)
+                    n = int(number)
+                    if n not in valid:
+                        valid.append(n)
+                        s += n
+                print(has_symbol, number, s)
                 # reset everything again
                 number = ""
                 # reset symbol

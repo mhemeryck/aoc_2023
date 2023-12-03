@@ -1,4 +1,3 @@
-from functools import reduce
 import typing
 
 FILENAME: str = "input.txt"
@@ -51,7 +50,7 @@ def find_neighboring_numbers(lines: typing.List[str], i: int, j: int, max_i: int
             else:
                 break
         # grow left
-        for a in range(y - 1, 0, -1):
+        for a in range(y - 1, -1, -1):
             can = lines[x][a]
             if can.isdigit() and (x, a) not in checked:
                 # prepend in case of left grow
@@ -111,8 +110,10 @@ def main() -> None:
             if el == "*":
                 numbers = find_neighboring_numbers(lines, i, j, max_i, max_j)
                 # print(numbers)
-                if len(numbers) > 1:
-                    prod = reduce(lambda acc, y: acc * y, numbers)
+                if len(numbers) == 2:
+                    prod = 1
+                    for number in numbers:
+                        prod *= number
                     result += prod
                     print(numbers, prod, result)
     print(result)

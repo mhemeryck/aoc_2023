@@ -9,25 +9,12 @@ def is_symbol(el: str) -> bool:
 
 def neighbor_has_symbol(lines: typing.List[str], i: int, j: int, max_i: int, max_j: int) -> bool:
     indices: typing.List[typing.Tuple[int, int]] = []
-    # top row
-    if i > 1:
-        if j > 1:
-            indices.append((i - 1, j - 1))
-        indices.append((i - 1, j))
-        if j < max_j - 1:
-            indices.append((i - 1, j + 1))
-    # current row
-    if j > 1:
-        indices.append((i, j - 1))
-    if j < max_j - 1:
-        indices.append((i, j + 1))
-    # below row
-    if i < max_i - 1:
-        if j > 1:
-            indices.append((i + 1, j - 1))
-        indices.append((i + 1, j))
-        if j < max_j - 1:
-            indices.append((i + 1, j + 1))
+
+    for o_i in [-1, 0, 1]:
+        for o_j in [-1, 0, 1]:
+            x, y = (i + o_i), (j + o_j)
+            if 0 <= x < max_i and 0 <= y < max_j:
+                indices.append((x, y))
 
     return any(is_symbol(lines[i][j]) for i, j in indices)
 
@@ -39,7 +26,7 @@ def main() -> None:
     number = ""
     has_symbol = False
     max_i = len(lines)
-    valid = []
+    parts = []
     s = 0
     for i, line in enumerate(lines):
         max_j = len(line)
@@ -55,10 +42,9 @@ def main() -> None:
             # at the end of a number
             elif not el.isdigit() and number:
                 if has_symbol:
-                    # print(number)
                     n = int(number)
-                    if n not in valid:
-                        valid.append(n)
+                    if n not in parts:
+                        parts.append(n)
                         s += n
                 print(has_symbol, number, s)
                 # reset everything again

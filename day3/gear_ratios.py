@@ -1,3 +1,4 @@
+from functools import reduce
 import typing
 
 FILENAME: str = "input.txt"
@@ -108,8 +109,13 @@ def main() -> None:
         max_j = len(line)
         for j, el in enumerate(line):
             if el == "*":
-                idx = find_neighboring_numbers(lines, i, j, max_i, max_j)
-                print(idx)
+                numbers = find_neighboring_numbers(lines, i, j, max_i, max_j)
+                # print(numbers)
+                if len(numbers) > 1:
+                    prod = reduce(lambda acc, y: acc * y, numbers)
+                    result += prod
+                    print(numbers, prod, result)
+    print(result)
 
 
 if __name__ == "__main__":

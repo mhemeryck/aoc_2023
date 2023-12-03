@@ -23,26 +23,31 @@ def main() -> None:
     with open(FILENAME, "r") as fh:
         lines = fh.read().splitlines()
 
-    number_str, found = "", False
     max_i = len(lines)
     result = 0
     for i, line in enumerate(lines):
         max_j = len(line)
+        # reset for a new line
+        number_str, found = "", False
         for j, el in enumerate(line):
             # we're in a number
             if el.isdigit():
                 number_str += el
-                found = found or neighbor_has_symbol(lines, i, j, max_i, max_j)
+                found |= neighbor_has_symbol(lines, i, j, max_i, max_j)
             else:
                 if found:
                     result += int(number_str)
-                if found or number_str:
-                    print(number_str, found, result)
+                # # debug
+                # if found or number_str:
+                #     print(number_str, found, result)
+
                 # reset
                 number_str, found = "", False
 
-        # reset for a new line
-        number_str, found = "", False
+        # handle end of line number
+        if found:
+            # print("EOL", number_str, found, result)
+            result += int(number_str)
 
     print(result)
 

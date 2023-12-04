@@ -58,8 +58,6 @@ def main() -> None:
     # print(result)
     # print(line_counts)
 
-    max_game_id = max(line_counts.keys())
-
     # Counts the number cards for a game card
     # Init with all game ids having one card
     counter: typing.Dict[int, int] = {game_id: 1 for game_id in line_counts.keys()}

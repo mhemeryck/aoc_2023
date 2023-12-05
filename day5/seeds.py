@@ -7,10 +7,10 @@ import time
 import typing
 
 
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 LOG_CONFIG = dict(
     version=1,
-    formatters={"default": {"format": "%(asctime)s - %(levelname)s - %(name)s - %(message)s"}},
+    formatters={"default": {"format": "%(asctime)s - %(levelname)s -  %(message)s"}},
     handlers={
         "stream": {
             "class": "logging.StreamHandler",
@@ -181,7 +181,7 @@ def main() -> None:
         ]
         consumers = [
             multiprocessing.Process(target=consumer, args=(q, maps, minimum, nseeds_consumed, max_nseeds))
-            for _ in range(32)
+            for _ in range(8)
         ]
 
         for p in producers:

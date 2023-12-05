@@ -1,7 +1,27 @@
 import collections
+import logging
+import logging.config
 import multiprocessing
 import sys
 import typing
+
+
+LOG_LEVEL = logging.DEBUG
+LOG_CONFIG = dict(
+    version=1,
+    formatters={"default": {"format": "%(asctime)s - %(levelname)s - %(name)s - %(message)s"}},
+    handlers={
+        "stream": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+            "level": LOG_LEVEL,
+        }
+    },
+    root={"handlers": ["stream"], "level": LOG_LEVEL},
+)
+logging.config.dictConfig(LOG_CONFIG)
+logger = logging.getLogger(__name__)
+
 
 FILENAME: str = "input.txt"
 
@@ -54,7 +74,7 @@ def location_for_seed(seed: int, maps: collections.OrderedDict[str, typing.List[
         prev = seed
         seed = apply(seed, map)
         if debug:
-            print("\t", prev, "->", map_name, "->", seed)
+            logger.debug("\t", prev, "->", map_name, "->", seed)
     return seed
 
 
@@ -82,27 +102,34 @@ def remap_seeds(seeds: typing.List[int]) -> typing.List[SeedRange]:
 def producer(
     q: multiprocessing.Queue,
     seed_range: SeedRange,
+    nseeds,
 ) -> None:
     for seed in range(seed_range.offset, seed_range.offset + seed_range.length):
-        # print(f"putting seed {seed}")
+        # logger.debug(f"putting seed {seed}")
         q.put(seed)
+        nseeds.value += 1
+
+        if nseeds.value % 1000 == 0:
+            logger.debug(f"produced {nseeds.value}")
 
 
 def consumer(
-    q: multiprocessing.Queue,
-    maps: collections.OrderedDict[str, typing.List[Map]],
-    minimum,
+    q: multiprocessing.Queue, maps: collections.OrderedDict[str, typing.List[Map]], minimum, nseeds, max_nseeds
 ) -> None:
-    print("starting consumer")
+    logger.debug("starting consumer")
     while True:
         seed = q.get()
+        nseeds.value += 1
         if seed is None:
             break
 
         location = location_for_seed(seed, maps)
         minimum.value = min(minimum.value, location)
         if location == minimum.value:
-            print(f"new minimum: {location}")
+            logger.info(f"new minimum: {location}")
+
+        if nseeds.value % 1000 == 0:
+            logger.debug(f"consumed {nseeds.value} / {max_nseeds} ({nseeds.value / max_nseeds * 100.0:0.2f}%)")
 
 
 def main() -> None:
@@ -133,17 +160,28 @@ def main() -> None:
         location = location_for_seed(seed, maps)
         results.append(location)
 
-    print("minimum of all results:", min(results))
+    logger.debug("minimum of all results:", min(results))
 
     # part 2: rewrap seeds to ranges
     seed_ranges = remap_seeds(seeds)
 
+    max_nseeds = sum(sr.length for sr in seed_ranges)
+
     with multiprocessing.Manager() as manager:
         minimum = manager.Value("i", sys.maxsize)
+        nseeds_produced = manager.Value("i", 0)
+        nseeds_consumed = manager.Value("i", 0)
+
         q = multiprocessing.Queue()
 
-        producers = [multiprocessing.Process(target=producer, args=(q, seed_range)) for seed_range in seed_ranges]
-        consumers = [multiprocessing.Process(target=consumer, args=(q, maps, minimum)) for _ in range(8)]
+        producers = [
+            multiprocessing.Process(target=producer, args=(q, seed_range, nseeds_produced))
+            for seed_range in seed_ranges
+        ]
+        consumers = [
+            multiprocessing.Process(target=consumer, args=(q, maps, minimum, nseeds_consumed, max_nseeds))
+            for _ in range(8)
+        ]
 
         for p in producers:
             p.start()
@@ -160,17 +198,17 @@ def main() -> None:
         for c in consumers:
             c.join()
 
-        print(minimum.value)
+        logger.info(minimum.value)
 
     # # part 2: process per seed range
     # for i, seed_range in enumerate(seed_ranges):
-    #     print(f"Processing range {i}")
+    #     logger.debug(f"Processing range {i}")
     #     for seed in range(seed_range.offset, seed_range.offset + seed_range.length):
     #         location = location_for_seed(seed, maps)
     #         minimum = min(minimum, location)
     #         if location == minimum:
-    #             print(seed, location, minimum)
-    # print(minimum)
+    #             logger.debug(seed, location, minimum)
+    # logger.debug(minimum)
 
 
 if __name__ == "__main__":

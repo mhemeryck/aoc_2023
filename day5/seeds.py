@@ -1,4 +1,5 @@
 import collections
+import multiprocessing
 import sys
 import typing
 
@@ -78,6 +79,32 @@ def remap_seeds(seeds: typing.List[int]) -> typing.List[SeedRange]:
     return result
 
 
+def producer(
+    q: multiprocessing.Queue,
+    seed_range: SeedRange,
+) -> None:
+    for seed in range(seed_range.offset, seed_range.offset + seed_range.length):
+        # print(f"putting seed {seed}")
+        q.put(seed)
+
+
+def consumer(
+    q: multiprocessing.Queue,
+    maps: collections.OrderedDict[str, typing.List[Map]],
+    minimum,
+) -> None:
+    print("starting consumer")
+    while True:
+        seed = q.get()
+        if seed is None:
+            break
+
+        location = location_for_seed(seed, maps)
+        minimum.value = min(minimum.value, location)
+        if location == minimum.value:
+            print(f"new minimum: {location}")
+
+
 def main() -> None:
     # parse seeds
     seed_line = LINES[0].split(":")[1]
@@ -111,15 +138,39 @@ def main() -> None:
     # part 2: rewrap seeds to ranges
     seed_ranges = remap_seeds(seeds)
 
-    minimum = sys.maxsize
-    # part 2: process per seed range
-    for i, seed_range in enumerate(seed_ranges):
-        print(f"Processing range {i}")
-        for seed in range(seed_range.offset, seed_range.offset + seed_range.length):
-            location = location_for_seed(seed, maps)
-            minimum = min(minimum, location)
-            print(seed, location, minimum)
-    print(minimum)
+    with multiprocessing.Manager() as manager:
+        minimum = manager.Value("i", sys.maxsize)
+        q = multiprocessing.Queue()
+
+        producers = [multiprocessing.Process(target=producer, args=(q, seed_range)) for seed_range in seed_ranges]
+        consumers = [multiprocessing.Process(target=consumer, args=(q, maps, minimum)) for _ in range(8)]
+
+        for p in producers:
+            p.start()
+
+        for c in consumers:
+            c.start()
+
+        for p in producers:
+            p.join()
+
+        for _ in range(len(consumers)):
+            q.put(None)
+
+        for c in consumers:
+            c.join()
+
+        print(minimum.value)
+
+    # # part 2: process per seed range
+    # for i, seed_range in enumerate(seed_ranges):
+    #     print(f"Processing range {i}")
+    #     for seed in range(seed_range.offset, seed_range.offset + seed_range.length):
+    #         location = location_for_seed(seed, maps)
+    #         minimum = min(minimum, location)
+    #         if location == minimum:
+    #             print(seed, location, minimum)
+    # print(minimum)
 
 
 if __name__ == "__main__":

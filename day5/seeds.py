@@ -3,6 +3,7 @@ import logging
 import logging.config
 import multiprocessing
 import sys
+import time
 import typing
 
 
@@ -73,8 +74,8 @@ def location_for_seed(seed: int, maps: collections.OrderedDict[str, typing.List[
     for map_name, map in maps.items():
         prev = seed
         seed = apply(seed, map)
-        if debug:
-            logger.debug("\t", prev, "->", map_name, "->", seed)
+        # if debug:
+        #     logger.debug("\t", prev, "->", map_name, "->", seed)
     return seed
 
 
@@ -129,7 +130,7 @@ def consumer(
             logger.info(f"new minimum: {location}")
 
         if nseeds.value % 1000 == 0:
-            logger.debug(f"consumed {nseeds.value} / {max_nseeds} ({nseeds.value / max_nseeds * 100.0:0.2f}%)")
+            logger.debug(f"consumed {nseeds.value} / {max_nseeds} ({nseeds.value / max_nseeds * 100.0:0.2f} %)")
 
 
 def main() -> None:
@@ -160,7 +161,7 @@ def main() -> None:
         location = location_for_seed(seed, maps)
         results.append(location)
 
-    logger.debug("minimum of all results:", min(results))
+    logger.debug("minimum of all results: %d", min(results))
 
     # part 2: rewrap seeds to ranges
     seed_ranges = remap_seeds(seeds)
@@ -180,7 +181,7 @@ def main() -> None:
         ]
         consumers = [
             multiprocessing.Process(target=consumer, args=(q, maps, minimum, nseeds_consumed, max_nseeds))
-            for _ in range(8)
+            for _ in range(32)
         ]
 
         for p in producers:

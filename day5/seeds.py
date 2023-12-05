@@ -46,7 +46,7 @@ Map = collections.namedtuple("Map", ("source", "target", "length"))
 
 
 def apply(source: int, map: typing.List[Map]) -> int:
-    """applies a map to a given source"""
+    """applies a list of maps to a given source"""
     for m in map:
         if m.source <= source <= m.source + m.length:
             return m.target + (source - m.source)
@@ -72,10 +72,7 @@ def main() -> None:
         elif name:
             # inside of a map
             target, source, length = line.split(" ")
-            target = int(target)
-            source = int(source)
-            length = int(length)
-            maps[name].append(Map(source=source, target=target, length=length))
+            maps[name].append(Map(source=int(source), target=int(target), length=int(length)))
 
     # print(maps)
 
@@ -83,10 +80,12 @@ def main() -> None:
     for seed in seeds:
         print(seed)
         for map_name, map in maps.items():
+            prev = seed
             seed = apply(seed, map)
-            print(map_name, seed)
+            print("\t", prev, "->", map_name, "->", seed)
         results.append(seed)
-    print(min(results))
+
+    print("minimum of all results:", min(results))
 
 
 if __name__ == "__main__":

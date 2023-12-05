@@ -1,4 +1,5 @@
 import collections
+import sys
 import typing
 
 FILENAME: str = "input.txt"
@@ -43,6 +44,17 @@ with open(FILENAME, "r") as fh:
 
 
 Map = collections.namedtuple("Map", ("source", "target", "length"))
+SeedRange = collections.namedtuple("SeedRange", ("offset", "length"))
+
+
+def location_for_seed(seed: int, maps: collections.OrderedDict[str, typing.List[Map]], debug: bool = False) -> int:
+    """apply all maps for a given seed"""
+    for map_name, map in maps.items():
+        prev = seed
+        seed = apply(seed, map)
+        if debug:
+            print("\t", prev, "->", map_name, "->", seed)
+    return seed
 
 
 def apply(source: int, map: typing.List[Map]) -> int:
@@ -53,11 +65,25 @@ def apply(source: int, map: typing.List[Map]) -> int:
     return source
 
 
+def remap_seeds(seeds: typing.List[int]) -> typing.List[SeedRange]:
+    result = []
+    offset, length = 0, 0
+    for n, seed in enumerate(seeds):
+        if n % 2 == 0:
+            offset = seed
+        else:
+            length = seed
+            result.append(SeedRange(offset=offset, length=length))
+
+    return result
+
+
 def main() -> None:
     # parse seeds
     seed_line = LINES[0].split(":")[1]
     seeds = [int(s) for s in seed_line.split(" ") if s]
 
+    # Parse the maps
     name = ""
     maps: collections.OrderedDict[str, typing.List[Map]] = collections.OrderedDict()
     for line in LINES[1:]:
@@ -74,18 +100,26 @@ def main() -> None:
             target, source, length = line.split(" ")
             maps[name].append(Map(source=int(source), target=int(target), length=int(length)))
 
-    # print(maps)
-
+    # part 1
     results = []
     for seed in seeds:
-        print(seed)
-        for map_name, map in maps.items():
-            prev = seed
-            seed = apply(seed, map)
-            print("\t", prev, "->", map_name, "->", seed)
-        results.append(seed)
+        location = location_for_seed(seed, maps)
+        results.append(location)
 
     print("minimum of all results:", min(results))
+
+    # part 2: rewrap seeds to ranges
+    seed_ranges = remap_seeds(seeds)
+
+    minimum = sys.maxsize
+    # part 2: process per seed range
+    for i, seed_range in enumerate(seed_ranges):
+        print(f"Processing range {i}")
+        for seed in range(seed_range.offset, seed_range.offset + seed_range.length):
+            location = location_for_seed(seed, maps)
+            minimum = min(minimum, location)
+            print(seed, location, minimum)
+    print(minimum)
 
 
 if __name__ == "__main__":

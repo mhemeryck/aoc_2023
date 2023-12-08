@@ -80,8 +80,8 @@ func produce(seedRanges []SeedRange, msgs chan<- int) {
 		// fmt.Printf("Start job %d\n", i)
 		wg.Add(1)
 		prodWg.Add(1)
+		sd := seedRange
 		go func() {
-			sd := seedRange
 			defer wg.Done()
 			defer prodWg.Done()
 			for seed := sd.Offset; seed < sd.Offset+sd.Length; seed++ {
@@ -126,22 +126,12 @@ type MinContainer struct {
 	Value int
 }
 
-func (m *MinContainer) IsLower(value int) bool {
-	return value < m.Value
-}
-
-func (m *MinContainer) Update(value int) {
+func (m *MinContainer) Check(value int) {
 	defer m.mu.Unlock()
 	m.mu.Lock()
-	if m.IsLower(value) {
+	if value < m.Value {
 		m.Value = value
-	}
-	fmt.Printf("New minimum! %d\n", value)
-}
-
-func (m *MinContainer) Check(value int) {
-	if m.IsLower(value) {
-		m.Update(value)
+		fmt.Printf("New minimum! %d\n", value)
 	}
 }
 

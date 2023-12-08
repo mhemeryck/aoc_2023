@@ -14,6 +14,7 @@ import (
 const (
 	FILENAME = "input.txt"
 	// FILENAME = "input2.txt"
+	// FILENAME = "example.txt"
 	NWORKERS = 8
 )
 
@@ -91,6 +92,7 @@ func produce(seedRanges []SeedRange, msgs chan<- int) {
 	}
 	prodWg.Wait()
 	// ensure we close off the channel ...
+	fmt.Printf("Done producing, closing the channel\n")
 	close(msgs)
 }
 
@@ -223,5 +225,4 @@ func main() {
 	wg.Wait()
 	fmt.Printf("the minimum is %v\n", mc.Value)
 	fmt.Printf("stop: %v\n", time.Now())
-
 }

@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 const FILENAME = "input.txt"
@@ -43,10 +45,27 @@ const FILENAME = "input.txt"
 // 60 56 37
 // 56 93 4`
 
+func apply(seed int, m []Map) int {
+	for _, mp := range m {
+		if seed >= mp.Source && seed <= mp.Source+mp.Length {
+			return mp.Target + (seed - mp.Source)
+		}
+	}
+	return seed
+
+}
+
+func locationForSeed(seed int, m [][]Map) int {
+	for _, mp := range m {
+		seed = apply(seed, mp)
+	}
+	return seed
+}
+
 type Map struct {
-	source int
-	target int
-	length int
+	Source int
+	Target int
+	Length int
 }
 
 func main() {
@@ -54,9 +73,9 @@ func main() {
 	fileContent := string(bytes)
 	LINES := strings.Split(fileContent, "\n")
 
+	// seeds
 	seedLine := strings.Split(string(LINES[0]), ":")[1]
 	seeds := make([]int, 0)
-
 	for _, s := range strings.Split(seedLine, " ") {
 		if s != "" {
 			seed, err := strconv.Atoi(s)
@@ -67,6 +86,7 @@ func main() {
 		}
 	}
 
+	// maps
 	maps := make([][]Map, 0)
 	var currentMapList []Map
 	for _, line := range LINES[1:] {
@@ -84,11 +104,21 @@ func main() {
 			t, _ := strconv.Atoi(target)
 			s, _ := strconv.Atoi(source)
 			l, _ := strconv.Atoi(length)
-			currentMapList = append(currentMapList, Map{target: t, source: s, length: l})
+			currentMapList = append(currentMapList, Map{Target: t, Source: s, Length: l})
 
 		}
-		fmt.Println(line)
+	}
+	// fmt.Printf("%v", maps)
+
+	results := make([]int, 0)
+	for _, seed := range seeds {
+		location := locationForSeed(seed, maps)
+		results = append(results, location)
 	}
 
-	fmt.Printf("%v", maps)
+	// fmt.Printf("%v\n", results)
+	min := slices.Min(results)
+	// part 1
+	fmt.Printf("min value: %v\n", min)
+
 }

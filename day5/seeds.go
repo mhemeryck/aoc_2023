@@ -13,6 +13,7 @@ import (
 
 const (
 	FILENAME = "input.txt"
+	// FILENAME = "input2.txt"
 	NWORKERS = 8
 )
 
@@ -122,18 +123,18 @@ type SeedRange struct {
 
 type MinContainer struct {
 	mu    sync.Mutex
-	value int
+	Value int
 }
 
 func (m *MinContainer) IsLower(value int) bool {
-	return value < m.value
+	return value < m.Value
 }
 
 func (m *MinContainer) Update(value int) {
 	defer m.mu.Unlock()
 	m.mu.Lock()
 	if m.IsLower(value) {
-		m.value = value
+		m.Value = value
 	}
 	fmt.Printf("New minimum! %d\n", value)
 }
@@ -146,7 +147,7 @@ func (m *MinContainer) Check(value int) {
 
 func NewMinContainer() MinContainer {
 	return MinContainer{
-		value: math.MaxInt64,
+		Value: math.MaxInt64,
 	}
 }
 
@@ -230,6 +231,7 @@ func main() {
 	go consume(msgs, maps)
 
 	wg.Wait()
+	fmt.Printf("the minimum is %v\n", mc.Value)
 	fmt.Printf("stop: %v\n", time.Now())
 
 }

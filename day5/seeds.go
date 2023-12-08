@@ -15,12 +15,13 @@ const (
 	FILENAME = "input.txt"
 	// FILENAME = "input2.txt"
 	// FILENAME = "example.txt"
-	NWORKERS = 8
+	NWORKERS = 16
 )
 
 var (
-	wg sync.WaitGroup
-	mc MinContainer
+	wg   sync.WaitGroup
+	mc   MinContainer
+	maps [][]Map
 )
 
 // var LINES string = `seeds: 79 14 55 13
@@ -96,7 +97,7 @@ func produce(seedRanges []SeedRange, msgs chan<- int) {
 	close(msgs)
 }
 
-func consume(msgs <-chan int, maps [][]Map) {
+func consume(msgs <-chan int) {
 	defer wg.Done()
 
 	for i := 0; i < NWORKERS; i++ {
@@ -176,7 +177,7 @@ func main() {
 	}
 
 	// maps
-	maps := make([][]Map, 0)
+	maps = make([][]Map, 0)
 	var currentMapList []Map
 	for _, line := range LINES[1:] {
 		if strings.Contains(line, "map") {
@@ -220,7 +221,7 @@ func main() {
 	wg.Add(1)
 	go produce(seedRanges, msgs)
 	wg.Add(1)
-	go consume(msgs, maps)
+	go consume(msgs)
 
 	wg.Wait()
 	fmt.Printf("the minimum is %v\n", mc.Value)

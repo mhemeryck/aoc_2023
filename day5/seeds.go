@@ -3,13 +3,19 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
+	"slices"
 	"strconv"
 	"strings"
-
-	"golang.org/x/exp/slices"
+	"sync"
 )
 
 const FILENAME = "input.txt"
+
+var (
+	wg sync.WaitGroup
+	mc MinContainer
+)
 
 // var LINES string = `seeds: 79 14 55 13
 
@@ -62,13 +68,91 @@ func locationForSeed(seed int, m [][]Map) int {
 	return seed
 }
 
+func produce(seedRanges []SeedRange, msgs chan<- int) {
+	defer wg.Done()
+	for i, seedRange := range seedRanges {
+		fmt.Printf("Start job %d\n", i)
+		wg.Add(1)
+		go func() {
+			sd := seedRange
+			defer wg.Done()
+			for seed := sd.Offset; seed < sd.Offset+sd.Length; seed++ {
+				msgs <- seed
+			}
+		}()
+	}
+}
+
+func consume(msgs <-chan int, maps [][]Map) {
+	defer wg.Done()
+
+	for i := 0; i < 16; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for seed := range msgs {
+				// fmt.Printf("%v\n", <-msgs)
+				location := locationForSeed(seed, maps)
+				mc.Check(location)
+			}
+		}()
+	}
+}
+
 type Map struct {
 	Source int
 	Target int
 	Length int
 }
 
+type SeedRange struct {
+	Offset int
+	Length int
+}
+
+type MinContainer struct {
+	mu    sync.Mutex
+	value int
+}
+
+func (m *MinContainer) IsLower(value int) bool {
+	return value < m.value
+}
+
+func (m *MinContainer) Update(value int) {
+	defer m.mu.Unlock()
+	m.mu.Lock()
+	m.value = value
+	fmt.Printf("New minimum! %d\n", value)
+}
+
+func (m *MinContainer) Check(value int) {
+	if m.IsLower(value) {
+		m.Update(value)
+	}
+}
+
+func NewMinContainer() MinContainer {
+	return MinContainer{
+		value: math.MaxInt64,
+	}
+}
+
+func RemapSeeds(seeds []int) []SeedRange {
+	var offset int
+	result := make([]SeedRange, len(seeds)/2)
+	for k, seed := range seeds {
+		if k%2 == 0 {
+			offset = seed
+		} else {
+			result = append(result, SeedRange{Offset: offset, Length: seed})
+		}
+	}
+	return result
+}
+
 func main() {
+	// read lines
 	bytes, _ := ioutil.ReadFile(FILENAME)
 	fileContent := string(bytes)
 	LINES := strings.Split(fileContent, "\n")
@@ -120,5 +204,19 @@ func main() {
 	min := slices.Min(results)
 	// part 1
 	fmt.Printf("min value: %v\n", min)
+
+	// part 2
+	seedRanges := RemapSeeds(seeds)
+	// fmt.Printf("%v\n", seedRanges)
+
+	var msgs = make(chan int)
+	mc = NewMinContainer()
+
+	wg.Add(1)
+	go produce(seedRanges, msgs)
+	wg.Add(1)
+	go consume(msgs, maps)
+
+	wg.Wait()
 
 }

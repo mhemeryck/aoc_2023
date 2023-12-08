@@ -3,7 +3,6 @@ import logging
 import logging.config
 import multiprocessing
 import sys
-import time
 import typing
 
 
@@ -72,7 +71,7 @@ SeedRange = collections.namedtuple("SeedRange", ("offset", "length"))
 def location_for_seed(seed: int, maps: collections.OrderedDict[str, typing.List[Map]], debug: bool = False) -> int:
     """apply all maps for a given seed"""
     for map_name, map in maps.items():
-        prev = seed
+        # prev = seed
         seed = apply(seed, map)
         # if debug:
         #     logger.debug("\t", prev, "->", map_name, "->", seed)

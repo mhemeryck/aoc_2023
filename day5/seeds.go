@@ -8,9 +8,13 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
-const FILENAME = "input.txt"
+const (
+	FILENAME = "input.txt"
+	NWORKERS = 8
+)
 
 var (
 	wg sync.WaitGroup
@@ -70,23 +74,29 @@ func locationForSeed(seed int, m [][]Map) int {
 
 func produce(seedRanges []SeedRange, msgs chan<- int) {
 	defer wg.Done()
-	for i, seedRange := range seedRanges {
-		fmt.Printf("Start job %d\n", i)
+	var prodWg sync.WaitGroup
+	for _, seedRange := range seedRanges {
+		// fmt.Printf("Start job %d\n", i)
 		wg.Add(1)
+		prodWg.Add(1)
 		go func() {
 			sd := seedRange
 			defer wg.Done()
+			defer prodWg.Done()
 			for seed := sd.Offset; seed < sd.Offset+sd.Length; seed++ {
 				msgs <- seed
 			}
 		}()
 	}
+	prodWg.Wait()
+	// ensure we close off the channel ...
+	close(msgs)
 }
 
 func consume(msgs <-chan int, maps [][]Map) {
 	defer wg.Done()
 
-	for i := 0; i < 16; i++ {
+	for i := 0; i < NWORKERS; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -122,7 +132,9 @@ func (m *MinContainer) IsLower(value int) bool {
 func (m *MinContainer) Update(value int) {
 	defer m.mu.Unlock()
 	m.mu.Lock()
-	m.value = value
+	if m.IsLower(value) {
+		m.value = value
+	}
 	fmt.Printf("New minimum! %d\n", value)
 }
 
@@ -207,16 +219,17 @@ func main() {
 
 	// part 2
 	seedRanges := RemapSeeds(seeds)
-	// fmt.Printf("%v\n", seedRanges)
 
 	var msgs = make(chan int)
 	mc = NewMinContainer()
 
+	fmt.Printf("start: %v\n", time.Now())
 	wg.Add(1)
 	go produce(seedRanges, msgs)
 	wg.Add(1)
 	go consume(msgs, maps)
 
 	wg.Wait()
+	fmt.Printf("stop: %v\n", time.Now())
 
 }

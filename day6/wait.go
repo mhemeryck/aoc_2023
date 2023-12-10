@@ -24,7 +24,11 @@ func parseLineInt(line string) ([]int, error) {
 		}
 	}
 	return result, nil
+}
 
+func parseLine(line string) (int, error) {
+	parsed := strings.ReplaceAll(line, " ", "")
+	return strconv.Atoi(parsed)
 }
 
 func main() {
@@ -65,13 +69,38 @@ func main() {
 			}
 		}
 		nAccepted = append(nAccepted, n)
-		fmt.Printf("%v\n", accepted)
+		// fmt.Printf("%v\n", accepted)
 	}
-	fmt.Printf("%v\n", nAccepted)
+	// fmt.Printf("%v\n", nAccepted)
 
 	prod := 1
 	for _, n := range nAccepted {
 		prod *= n
 	}
 	fmt.Printf("answer part 1: %d\n", prod)
+
+	// part 2
+	tMax, err := parseLine(timeLine)
+	if err != nil {
+		panic(err)
+	}
+	dMax, err := parseLine(distanceLine)
+	if err != nil {
+		panic(err)
+	}
+	// fmt.Printf("%d - %d\n", tMax, dMax)
+
+	n := 0
+	for tInit := 1; tInit < tMax; tInit++ {
+		tRem := tMax - tInit
+		if tRem <= 0 {
+			break
+		}
+		v := tInit
+		d := v * tRem
+		if d > dMax {
+			n++
+		}
+	}
+	fmt.Printf("answer part 2: %d\n", n)
 }

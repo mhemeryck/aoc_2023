@@ -115,6 +115,24 @@ func countRanks(hand string) map[string]int {
 	return result
 }
 
+func handRank(hand string) int {
+	if isFiveOfAKind(hand) {
+		return FIVE_OF_A_KIND
+	} else if isFourOfAKind(hand) {
+		return FOUR_OF_A_KIND
+	} else if isFullHouse(hand) {
+		return FULL_HOUSE
+	} else if isThreeOfAKind(hand) {
+		return THREE_OF_A_KIND
+	} else if isTwoPair(hand) {
+		return TWO_PAIR
+	} else if isOnePair(hand) {
+		return ONE_PAIR
+	} else {
+		return HIGH_CARD
+	}
+}
+
 func main() {
 	// parse stuff
 	bytes, _ := ioutil.ReadFile(FILENAME)

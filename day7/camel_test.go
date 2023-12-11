@@ -82,3 +82,44 @@ func Test_countRanks(t *testing.T) {
 		}
 	}
 }
+
+func Test_handRanks(t *testing.T) {
+	testCases := map[string]struct {
+		expected int
+		actual   int
+	}{
+		"five of a kind": {
+			FIVE_OF_A_KIND,
+			handRank("AAAAA"),
+		},
+		"four of a kind": {
+			FOUR_OF_A_KIND,
+			handRank("AA8AA"),
+		},
+		"full house": {
+			FULL_HOUSE,
+			handRank("23332"),
+		},
+		"three of a kind": {
+			THREE_OF_A_KIND,
+			handRank("TTT98"),
+		},
+		"two pair": {
+			TWO_PAIR,
+			handRank("23432"),
+		},
+		"one pair": {
+			ONE_PAIR,
+			handRank("A23A4"),
+		},
+		"high card": {
+			HIGH_CARD,
+			handRank("23456"),
+		},
+	}
+	for _, testCase := range testCases {
+		if testCase.expected != testCase.actual {
+			t.Errorf("Expected %v got %v\n", testCase.expected, testCase.actual)
+		}
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -67,7 +68,7 @@ func isFullHouse(hand string) bool {
 func isThreeOfAKind(hand string) bool {
 	selected := ""
 	for card, count := range countRanks(hand) {
-		if count == 3 {
+		if count == 3 && card != "J" {
 			selected = card
 		}
 	}
@@ -77,7 +78,7 @@ func isThreeOfAKind(hand string) bool {
 	} else {
 		// there was another higher ranking combination
 		for card, count := range countRanks(hand) {
-			if card != selected && count >= 3 {
+			if card != selected && count >= 3 && card != "J" {
 				return false
 			}
 		}
@@ -105,7 +106,7 @@ func isOnePair(hand string) bool {
 	return pairCount == 1
 }
 
-func countRanks(hand string) map[string]int {
+func countRanksRegular(hand string) map[string]int {
 	result := make(map[string]int, 0)
 	for _, s := range AllCards {
 		for _, c := range hand {
@@ -117,8 +118,8 @@ func countRanks(hand string) map[string]int {
 	return result
 }
 
-func countRanksJoker(hand string) map[string]int {
-	ranks := countRanks(hand)
+func countRanks(hand string) map[string]int {
+	ranks := countRanksRegular(hand)
 	if !strings.Contains(hand, "J") {
 		return ranks
 	}
@@ -147,7 +148,7 @@ func countRanksJoker(hand string) map[string]int {
 		return ranks
 	} else {
 		newHand := strings.ReplaceAll(hand, "J", maxCard)
-		return countRanks(newHand)
+		return countRanksRegular(newHand)
 	}
 }
 
@@ -190,8 +191,8 @@ func handCmp(a, b Hand) int {
 	for k := range a.hand {
 		cA := a.hand[k]
 		cB := b.hand[k]
-		iA := slices.Index(AllCards, string(cA))
-		iB := slices.Index(AllCards, string(cB))
+		iA := slices.Index(AllCardsJoker, string(cA))
+		iB := slices.Index(AllCardsJoker, string(cB))
 		if iA < iB {
 			return -1
 		} else if iA > iB {
@@ -202,32 +203,25 @@ func handCmp(a, b Hand) int {
 	return 0
 }
 
-func handCmpJoker(a, b Hand) int {
-	rankA := handRank(a.hand)
-	rankB := handRank(b.hand)
-
-	// lower than
-	if rankA < rankB {
-		return -1
-		// higher than
-	} else if rankA > rankB {
-		return 1
+func printRank(rank int) string {
+	switch rank {
+	case HIGH_CARD:
+		return "high card"
+	case ONE_PAIR:
+		return "one pair"
+	case TWO_PAIR:
+		return "two pair"
+	case THREE_OF_A_KIND:
+		return "three of a kind"
+	case FULL_HOUSE:
+		return "full house"
+	case FOUR_OF_A_KIND:
+		return "four of a kind"
+	case FIVE_OF_A_KIND:
+		return "five of a kind"
+	default:
+		return "unknown"
 	}
-
-	// if equal at this point, compare the ranks by index
-	for k := range a.hand {
-		cA := a.hand[k]
-		cB := b.hand[k]
-		iA := slices.Index(AllCards, string(cA))
-		iB := slices.Index(AllCards, string(cB))
-		if iA < iB {
-			return -1
-		} else if iA > iB {
-			return 1
-		}
-
-	}
-	return 0
 }
 
 func main() {
@@ -251,8 +245,11 @@ func main() {
 
 	// fmt.Printf("%v\n", hands)
 	// sort in place
-	slices.SortFunc(hands, handCmp)
+	slices.SortStableFunc(hands, handCmp)
 	// fmt.Printf("%v\n", hands)
+	for k, hand := range hands {
+		fmt.Printf("%03d - %s - %s\n", k, hand.hand, printRank(handRank(hand.hand)))
+	}
 
 	// product of rank x bid
 	result := 0
@@ -260,5 +257,5 @@ func main() {
 		result += (k + 1) * hand.bid
 	}
 
-	fmt.Printf("Result part 1: %d\n", result)
+	fmt.Printf("Result part 2: %d\n", result)
 }

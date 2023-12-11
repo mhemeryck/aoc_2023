@@ -150,3 +150,40 @@ func Test_handCmp(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func Test_countRanksJoker(t *testing.T) {
+	testCases := map[string]struct {
+		expected map[string]int
+		actual   map[string]int
+	}{
+		"simple": {
+			map[string]int{"3": 2, "2": 1, "T": 1, "K": 1},
+			countRanksJoker("32T3K"),
+		},
+		"two pair": {
+			map[string]int{"K": 2, "6": 1, "7": 2},
+			countRanksJoker("KK677"),
+		},
+		"four of a kind": {
+			map[string]int{"5": 4, "T": 1},
+			countRanksJoker("T55J5"),
+		},
+		"four of a kind 2": {
+			map[string]int{"Q": 4, "A": 1},
+			countRanksJoker("QQQJA"),
+		},
+		"full house": {
+			map[string]int{"Q": 3, "A": 1, "2": 1},
+			countRanksJoker("QQJ2A"),
+		},
+		"three of a kind": {
+			map[string]int{"A": 3, "3": 1, "4": 1},
+			countRanksJoker("JJA34"),
+		},
+	}
+	for _, testCase := range testCases {
+		if !reflect.DeepEqual(testCase.expected, testCase.actual) {
+			t.Errorf("Expected %v got ranks, got %v\n", testCase.expected, testCase.actual)
+		}
+	}
+}

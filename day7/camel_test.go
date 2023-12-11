@@ -123,3 +123,30 @@ func Test_handRanks(t *testing.T) {
 		}
 	}
 }
+
+func Test_handCmp(t *testing.T) {
+	// Five of a kinds wins (left is highest)
+	if handCmp(Hand{hand: "AAAAA", bid: 1}, Hand{hand: "23459", bid: 2}) != 1 {
+		t.Fail()
+	}
+	// full house wins (left is highest)
+	if handCmp(Hand{hand: "22333", bid: 1}, Hand{hand: "56789", bid: 2}) != 1 {
+		t.Fail()
+	}
+	// four of kind wins (right is highest)
+	if handCmp(Hand{hand: "22333", bid: 1}, Hand{hand: "88881", bid: 2}) != -1 {
+		t.Fail()
+	}
+	// four of kind wins; high card (left is highest)
+	if handCmp(Hand{hand: "98888", bid: 1}, Hand{hand: "88881", bid: 2}) != 1 {
+		t.Fail()
+	}
+	// completely equal
+	if actual := handCmp(Hand{hand: "98888", bid: 1}, Hand{hand: "98888", bid: 2}); actual != 0 {
+		t.Errorf("Got %v\n", actual)
+	}
+	// three of a kind, right wins due to Q
+	if handCmp(Hand{hand: "T55J5", bid: 1}, Hand{hand: "QQQJA", bid: 2}) != -1 {
+		t.Fail()
+	}
+}

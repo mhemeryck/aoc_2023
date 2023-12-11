@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -138,15 +139,43 @@ type Hand struct {
 	bid  int
 }
 
+func handCmp(a, b Hand) int {
+	rankA := handRank(a.hand)
+	rankB := handRank(b.hand)
+
+	// lower than
+	if rankA < rankB {
+		return -1
+		// higher than
+	} else if rankA > rankB {
+		return 1
+	}
+
+	// if equal at this point, compare the ranks by index
+	for k := range a.hand {
+		cA := a.hand[k]
+		cB := b.hand[k]
+		iA := slices.Index(AllCards, string(cA))
+		iB := slices.Index(AllCards, string(cB))
+		if iA < iB {
+			return -1
+		} else if iA > iB {
+			return 1
+		}
+
+	}
+	return 0
+}
+
 func main() {
 	// parse stuff
 	bytes, _ := ioutil.ReadFile(FILENAME)
 	LINES := strings.Split(string(bytes), "\n")
 
-	hands := make([]Hand, len(LINES))
+	hands := make([]Hand, len(LINES)-1)
 	for k, line := range LINES {
 		if line == "" {
-			continue
+			break
 		}
 		lineSplit := strings.Split(line, " ")
 		h := lineSplit[0]
@@ -156,7 +185,8 @@ func main() {
 		}
 		hands[k] = Hand{hand: h, bid: n}
 	}
-	fmt.Printf("%v\n", hands)
 
-	_ = make([]string, len(hands))
+	fmt.Printf("%v\n", hands)
+	slices.SortFunc(hands, handCmp)
+	fmt.Printf("%v\n", hands)
 }

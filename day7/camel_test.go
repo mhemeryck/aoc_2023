@@ -42,6 +42,9 @@ func Test_isThreeOfAKind(t *testing.T) {
 	if isThreeOfAKind("TTTT5") {
 		t.Fail()
 	}
+	if !isThreeOfAKind("68J2J") {
+		t.Fail()
+	}
 }
 
 func Test_isTwoPair(t *testing.T) {
@@ -69,11 +72,11 @@ func Test_countRanks(t *testing.T) {
 	}{
 		"simple": {
 			map[string]int{"2": 1, "3": 1, "4": 1, "5": 1, "A": 1},
-			countRanks("2345A"),
+			countRanksRegular("2345A"),
 		},
 		"doubles": {
 			map[string]int{"2": 2, "4": 1, "Q": 2},
-			countRanks("224QQ"),
+			countRanksRegular("224QQ"),
 		},
 	}
 	for _, testCase := range testCases {
@@ -158,32 +161,42 @@ func Test_countRanksJoker(t *testing.T) {
 	}{
 		"simple": {
 			map[string]int{"3": 2, "2": 1, "T": 1, "K": 1},
-			countRanksJoker("32T3K"),
+			countRanks("32T3K"),
 		},
 		"two pair": {
 			map[string]int{"K": 2, "6": 1, "7": 2},
-			countRanksJoker("KK677"),
+			countRanks("KK677"),
 		},
 		"four of a kind": {
 			map[string]int{"5": 4, "T": 1},
-			countRanksJoker("T55J5"),
+			countRanks("T55J5"),
 		},
 		"four of a kind 2": {
 			map[string]int{"Q": 4, "A": 1},
-			countRanksJoker("QQQJA"),
+			countRanks("QQQJA"),
 		},
 		"full house": {
 			map[string]int{"Q": 3, "A": 1, "2": 1},
-			countRanksJoker("QQJ2A"),
+			countRanks("QQJ2A"),
 		},
 		"three of a kind": {
 			map[string]int{"A": 3, "3": 1, "4": 1},
-			countRanksJoker("JJA34"),
+			countRanks("JJA34"),
+		},
+		"three of a kind 2": {
+			map[string]int{"8": 3, "6": 1, "2": 1},
+			countRanks("68J2J"),
 		},
 	}
 	for _, testCase := range testCases {
 		if !reflect.DeepEqual(testCase.expected, testCase.actual) {
 			t.Errorf("Expected %v got ranks, got %v\n", testCase.expected, testCase.actual)
 		}
+	}
+}
+
+func Test_handRank(t *testing.T) {
+	if actual := handRank("59TJJ"); actual != THREE_OF_A_KIND {
+		t.Errorf("Expected three of a kind, got %v\n", printRank(actual))
 	}
 }

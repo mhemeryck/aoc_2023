@@ -20,24 +20,92 @@ const (
 	FIVE_OF_A_KIND
 )
 
+var (
+	AllCards = []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"}
+)
+
 func isFiveOfAKind(hand string) bool {
-	firstCard := rune(hand[0])
-	for _, h := range hand {
-		if h != firstCard {
-			return false
+	for _, count := range countRanks(hand) {
+		if count == 5 {
+			return true
 		}
 
+	}
+	return false
+}
+
+func isFourOfAKind(hand string) bool {
+	for _, count := range countRanks(hand) {
+		if count == 4 {
+			return true
+		}
+
+	}
+	return false
+}
+
+func isFullHouse(hand string) bool {
+	hasRank3 := false
+	hasRank2 := false
+	for _, count := range countRanks(hand) {
+		if count == 3 {
+			// at least one with rank 3
+			hasRank3 = true
+		}
+		if count == 2 {
+			// at least one with rank 2
+			hasRank2 = true
+
+		}
+	}
+	return hasRank2 && hasRank3
+
+}
+
+func isThreeOfAKind(hand string) bool {
+	selected := ""
+	for card, count := range countRanks(hand) {
+		if count == 3 {
+			selected = card
+		}
+	}
+	// no card selected, so no three of a kind
+	if selected == "" {
+		return false
+	} else {
+		// there was another higher ranking combination
+		for card, count := range countRanks(hand) {
+			if card != selected && count >= 3 {
+				return false
+			}
+		}
 	}
 	return true
 }
 
-func isFourOfAKind(hand string) bool {
-	return false
+func isTwoPair(hand string) bool {
+	pairCount := 0
+	for _, count := range countRanks(hand) {
+		if count == 2 {
+			pairCount++
+		}
+	}
+	return pairCount == 2
+}
+
+func isOnePair(hand string) bool {
+	pairCount := 0
+	for _, count := range countRanks(hand) {
+		if count == 2 {
+			pairCount++
+		}
+	}
+	return pairCount == 1
 }
 
 func countRanks(hand string) map[string]int {
 	result := make(map[string]int, 0)
-	for _, s := range []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"} {
+	for _, s := range AllCards {
 		for _, c := range hand {
 			if s == string(c) {
 				result[s]++

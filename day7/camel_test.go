@@ -2,8 +2,11 @@ package main
 
 import "testing"
 
-func test_isFiveOfAkind(t *testing.T) {
-	if !isFiveOfAKind("AAAAA"){
+func Test_isFiveOfAkind(t *testing.T) {
+	if !isFiveOfAKind("AAAAA") {
 		t.Error("Expected five of a kind")
+	}
+	if isFiveOfAKind("ATJ45") {
+		t.Error("Expected not five of a kind")
 	}
 }

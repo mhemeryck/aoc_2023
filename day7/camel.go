@@ -31,6 +31,22 @@ func isFiveOfAKind(hand string) bool {
 	return true
 }
 
+func isFourOfAKind(hand string) bool {
+	return false
+}
+
+func countRanks(hand string) map[string]int {
+	result := make(map[string]int, 0)
+	for _, s := range []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"} {
+		for _, c := range hand {
+			if s == string(c) {
+				result[s]++
+			}
+		}
+	}
+	return result
+}
+
 func main() {
 	// parse stuff
 	bytes, _ := ioutil.ReadFile(FILENAME)

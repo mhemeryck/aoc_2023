@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -27,8 +26,8 @@ var (
 	AllCardsJoker = []string{"J", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"}
 )
 
-func isFiveOfAKind(hand string) bool {
-	for _, count := range countRanks(hand) {
+func isFiveOfAKind(hand string, ranks map[string]int) bool {
+	for _, count := range ranks {
 		if count == 5 {
 			return true
 		}
@@ -37,8 +36,8 @@ func isFiveOfAKind(hand string) bool {
 	return false
 }
 
-func isFourOfAKind(hand string) bool {
-	for _, count := range countRanks(hand) {
+func isFourOfAKind(hand string, ranks map[string]int) bool {
+	for _, count := range ranks {
 		if count == 4 {
 			return true
 		}
@@ -47,10 +46,10 @@ func isFourOfAKind(hand string) bool {
 	return false
 }
 
-func isFullHouse(hand string) bool {
+func isFullHouse(hand string, ranks map[string]int) bool {
 	hasRank3 := false
 	hasRank2 := false
-	for _, count := range countRanks(hand) {
+	for _, count := range ranks {
 		if count == 3 {
 			// at least one with rank 3
 			hasRank3 = true
@@ -65,9 +64,9 @@ func isFullHouse(hand string) bool {
 
 }
 
-func isThreeOfAKind(hand string) bool {
+func isThreeOfAKind(hand string, ranks map[string]int) bool {
 	selected := ""
-	for card, count := range countRanks(hand) {
+	for card, count := range ranks {
 		if count == 3 && card != "J" {
 			selected = card
 		}
@@ -77,7 +76,7 @@ func isThreeOfAKind(hand string) bool {
 		return false
 	} else {
 		// there was another higher ranking combination
-		for card, count := range countRanks(hand) {
+		for card, count := range ranks {
 			if card != selected && count >= 3 && card != "J" {
 				return false
 			}
@@ -86,9 +85,9 @@ func isThreeOfAKind(hand string) bool {
 	return true
 }
 
-func isTwoPair(hand string) bool {
+func isTwoPair(hand string, ranks map[string]int) bool {
 	pairCount := 0
-	for _, count := range countRanks(hand) {
+	for _, count := range ranks {
 		if count == 2 {
 			pairCount++
 		}
@@ -96,9 +95,9 @@ func isTwoPair(hand string) bool {
 	return pairCount == 2
 }
 
-func isOnePair(hand string) bool {
+func isOnePair(hand string, ranks map[string]int) bool {
 	pairCount := 0
-	for _, count := range countRanks(hand) {
+	for _, count := range ranks {
 		if count == 2 {
 			pairCount++
 		}
@@ -153,17 +152,18 @@ func countRanks(hand string) map[string]int {
 }
 
 func handRank(hand string) int {
-	if isFiveOfAKind(hand) {
+	ranks := countRanks(hand)
+	if isFiveOfAKind(hand, ranks) {
 		return FIVE_OF_A_KIND
-	} else if isFourOfAKind(hand) {
+	} else if isFourOfAKind(hand, ranks) {
 		return FOUR_OF_A_KIND
-	} else if isFullHouse(hand) {
+	} else if isFullHouse(hand, ranks) {
 		return FULL_HOUSE
-	} else if isThreeOfAKind(hand) {
+	} else if isThreeOfAKind(hand, ranks) {
 		return THREE_OF_A_KIND
-	} else if isTwoPair(hand) {
+	} else if isTwoPair(hand, ranks) {
 		return TWO_PAIR
-	} else if isOnePair(hand) {
+	} else if isOnePair(hand, ranks) {
 		return ONE_PAIR
 	} else {
 		return HIGH_CARD
@@ -246,9 +246,37 @@ func main() {
 	// fmt.Printf("%v\n", hands)
 	// sort in place
 	slices.SortStableFunc(hands, handCmp)
+	// sort.SliceStable(hands, func(i, j int) bool {
+	// 	handA := hands[i].hand
+	// 	handB := hands[j].hand
+	// 	rankA := handRank(handA)
+	// 	rankB := handRank(handB)
+	// 	// lower than
+	// 	if rankA < rankB {
+	// 		return true
+	// 		// higher than
+	// 	} else if rankA > rankB {
+	// 		return false
+	// 	} else {
+	// 		for k := range handA {
+	// 			cA := handA[k]
+	// 			cB := handB[k]
+	// 			iA := slices.Index(AllCardsJoker, string(cA))
+	// 			iB := slices.Index(AllCardsJoker, string(cB))
+	// 			if iA < iB {
+	// 				return false
+	// 			} else if iA > iB {
+	// 				return true
+	// 			}
+	// 		}
+	// 	}
+	// 	// at this point, it does not matter
+	// 	return false
+	// })
+
 	// fmt.Printf("%v\n", hands)
-	for k, hand := range hands {
-		fmt.Printf("%03d - %s - %s\n", k, hand.hand, printRank(handRank(hand.hand)))
+	for k, h := range hands {
+		fmt.Printf("%03d - %s - %s\n", k, h.hand, printRank(handRank(h.hand)))
 	}
 
 	// product of rank x bid

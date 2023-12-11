@@ -199,4 +199,7 @@ func Test_handRank(t *testing.T) {
 	if actual := handRank("59TJJ"); actual != THREE_OF_A_KIND {
 		t.Errorf("Expected three of a kind, got %v\n", printRank(actual))
 	}
+	if actual := handRank("J68J4"); actual != THREE_OF_A_KIND {
+		t.Errorf("Expected three of a kind, got %v\n", printRank(actual))
+	}
 }

@@ -22,7 +22,7 @@ const (
 )
 
 var (
-	AllCards = []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"}
+	AllCards = []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"}
 )
 
 func isFiveOfAKind(hand string) bool {
@@ -186,11 +186,12 @@ func main() {
 		hands[k] = Hand{hand: h, bid: n}
 	}
 
-	fmt.Printf("%v\n", hands)
+	// fmt.Printf("%v\n", hands)
 	// sort in place
 	slices.SortFunc(hands, handCmp)
-	fmt.Printf("%v\n", hands)
+	// fmt.Printf("%v\n", hands)
 
+	// product of rank x bid
 	result := 0
 	for k, hand := range hands {
 		result += (k + 1) * hand.bid

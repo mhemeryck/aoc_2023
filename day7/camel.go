@@ -22,7 +22,8 @@ const (
 )
 
 var (
-	AllCards = []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"}
+	AllCards      = []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"}
+	AllCardsJoker = []string{"J", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"}
 )
 
 func isFiveOfAKind(hand string) bool {
@@ -116,6 +117,40 @@ func countRanks(hand string) map[string]int {
 	return result
 }
 
+func countRanksJoker(hand string) map[string]int {
+	ranks := countRanks(hand)
+	if !strings.Contains(hand, "J") {
+		return ranks
+	}
+
+	maxCard := ""
+	maxI := -1
+	maxCount := 0
+	for card, count := range ranks {
+		if card == "J" {
+			continue
+		}
+
+		iCard := slices.Index(AllCards, string(card))
+		if count > maxCount {
+			maxCount = count
+			maxCard = card
+		} else if count == maxCount && iCard > maxI {
+			maxCount = count
+			maxCard = card
+			maxI = iCard
+		}
+	}
+
+	// nothing changed ...
+	if maxCard == "" {
+		return ranks
+	} else {
+		newHand := strings.ReplaceAll(hand, "J", maxCard)
+		return countRanks(newHand)
+	}
+}
+
 func handRank(hand string) int {
 	if isFiveOfAKind(hand) {
 		return FIVE_OF_A_KIND
@@ -140,6 +175,34 @@ type Hand struct {
 }
 
 func handCmp(a, b Hand) int {
+	rankA := handRank(a.hand)
+	rankB := handRank(b.hand)
+
+	// lower than
+	if rankA < rankB {
+		return -1
+		// higher than
+	} else if rankA > rankB {
+		return 1
+	}
+
+	// if equal at this point, compare the ranks by index
+	for k := range a.hand {
+		cA := a.hand[k]
+		cB := b.hand[k]
+		iA := slices.Index(AllCards, string(cA))
+		iB := slices.Index(AllCards, string(cB))
+		if iA < iB {
+			return -1
+		} else if iA > iB {
+			return 1
+		}
+
+	}
+	return 0
+}
+
+func handCmpJoker(a, b Hand) int {
 	rankA := handRank(a.hand)
 	rankB := handRank(b.hand)
 

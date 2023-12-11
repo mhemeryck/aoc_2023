@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	// FILENAME = "input.txt"
-	FILENAME = "example.txt"
+	FILENAME = "input.txt"
+	// FILENAME = "example.txt"
 
 	HIGH_CARD = iota
 	ONE_PAIR
@@ -187,6 +187,14 @@ func main() {
 	}
 
 	fmt.Printf("%v\n", hands)
+	// sort in place
 	slices.SortFunc(hands, handCmp)
 	fmt.Printf("%v\n", hands)
+
+	result := 0
+	for k, hand := range hands {
+		result += (k + 1) * hand.bid
+	}
+
+	fmt.Printf("Result part 1: %d\n", result)
 }

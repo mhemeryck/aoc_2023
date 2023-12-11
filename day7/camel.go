@@ -133,26 +133,30 @@ func handRank(hand string) int {
 	}
 }
 
+type Hand struct {
+	hand string
+	bid  int
+}
+
 func main() {
 	// parse stuff
 	bytes, _ := ioutil.ReadFile(FILENAME)
 	LINES := strings.Split(string(bytes), "\n")
 
-	hands := make([]string, len(LINES))
-	bids := make([]int, len(LINES))
+	hands := make([]Hand, len(LINES))
 	for k, line := range LINES {
 		if line == "" {
-			break
+			continue
 		}
 		lineSplit := strings.Split(line, " ")
-		hands[k] = lineSplit[0]
+		h := lineSplit[0]
 		n, err := strconv.Atoi(lineSplit[1])
 		if err != nil {
 			panic(err)
 		}
-		bids[k] = n
+		hands[k] = Hand{hand: h, bid: n}
 	}
-	fmt.Printf("%v - %v\n", hands, bids)
+	fmt.Printf("%v\n", hands)
 
 	_ = make([]string, len(hands))
 }

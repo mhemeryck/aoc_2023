@@ -25,7 +25,7 @@ def main() -> None:
     # part2:  sum all last diffs (last item)
     result = 0
     for line in lines:
-        orig_line = line[:]
+        # orig_line = line[:]
         first = [line[0]]
         while not np.all(line == 0):
             d = np.diff(line)

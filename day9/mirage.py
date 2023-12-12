@@ -11,7 +11,7 @@ def main() -> None:
     # parsing
     lines = np.array([[int(i) for i in line.split(" ")] for line in LINES])
 
-    # sum all last diffs
+    # part1:  sum all last diffs (last item)
     result = 0
     for line in lines:
         result += line[-1]
@@ -21,6 +21,24 @@ def main() -> None:
             line = d
 
     print(f"Part 1: {result}")
+
+    # part2:  sum all last diffs (last item)
+    result = 0
+    for line in lines:
+        orig_line = line[:]
+        first = [line[0]]
+        while not np.all(line == 0):
+            d = np.diff(line)
+            # result += d[-1]
+            first.append(d[0])
+            line = d
+        n = 0
+        for k in first[::-1][1:]:
+            n = k - n
+        result += n
+        # print(orig_line, first, n)
+
+    print(f"Part 2: {result}")
 
 
 if __name__ == "__main__":

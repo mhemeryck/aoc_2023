@@ -13,6 +13,10 @@ SJ.L7
 |F--J
 LJ..."""
 
+DATA = """F-J
+JS7
+-J|"""
+
 FILENAME: str = "input.txt"
 with open(FILENAME, "r") as fh:
     DATA = fh.read()
@@ -61,16 +65,16 @@ def main() -> None:
         west_idx = can_idx[0], can_idx[1] - 1
         if bound_check(west_idx[0], west_idx[1], maze.shape[0], maze.shape[1]):
             west = maze[west_idx]
-            if (counts[west_idx] == 0 or counts[west_idx] > can) and west == ("L", "F", "-"):
+            if (counts[west_idx] == 0 or counts[west_idx] > can) and west in ("L", "F", "-"):
                 counts[west_idx] = can + 1
                 candidates.append(west_idx)
-        breakpoint()
-        print(
-            counts[
-                np.max([can_idx[0] - 10, 0]) : np.min([can_idx[0] + 11, counts.shape[0] - 1]),
-                np.max([can_idx[1] - 10, 0]) : np.min([can_idx[1] + 11, counts.shape[1] - 1]),
-            ]
-        )
+        # breakpoint()
+        # print(
+        #     counts[
+        #         np.max([can_idx[0] - 10, 0]) : np.min([can_idx[0] + 11, counts.shape[0]]),
+        #         np.max([can_idx[1] - 10, 0]) : np.min([can_idx[1] + 11, counts.shape[1]]),
+        #     ]
+        # )
         # print(counts)
 
     result = np.max(counts)

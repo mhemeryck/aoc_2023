@@ -6,9 +6,15 @@ DATA = """.....
 .L-J.
 ....."""
 
-FILENAME: str = "input.txt"
-with open(FILENAME, "r") as fh:
-    DATA = fh.read()
+DATA = """..F7.
+.FJ|.
+SJ.L7
+|F--J
+LJ..."""
+
+# FILENAME: str = "input.txt"
+# with open(FILENAME, "r") as fh:
+#     DATA = fh.read()
 
 
 def main() -> None:
@@ -32,7 +38,7 @@ def main() -> None:
         except IndexError:
             pass
         else:
-            if counts[north_idx] == 0 and north in ("7", "F", "|"):
+            if (counts[north_idx] == 0 or counts[north_idx] > can) and north in ("7", "F", "|"):
                 counts[north_idx] = can + 1
                 candidates.append(north_idx)
         # south
@@ -42,7 +48,7 @@ def main() -> None:
         except IndexError:
             pass
         else:
-            if counts[south_idx] == 0 and south in ("J", "L", "|"):
+            if (counts[south_idx] == 0 or counts[south_idx] > can) and south in ("J", "L", "|"):
                 counts[south_idx] = can + 1
                 candidates.append(south_idx)
         # east
@@ -52,17 +58,17 @@ def main() -> None:
         except IndexError:
             pass
         else:
-            if counts[east_idx] == 0 and east in ("J", "7", "-"):
+            if (counts[east_idx] == 0 or counts[east_idx] > can) and east in ("J", "7", "-"):
                 counts[east_idx] = can + 1
                 candidates.append(east_idx)
         # west
-        west_idx = can_idx[0], can_idx[1] + 1
+        west_idx = can_idx[0], can_idx[1] - 1
         try:
             west = maze[west_idx]
         except IndexError:
             pass
         else:
-            if counts[west_idx] == 0 and west == ("L", "F", "-"):
+            if (counts[west_idx] == 0 or counts[west_idx] > can) and west == ("L", "F", "-"):
                 counts[west_idx] = can + 1
                 candidates.append(west_idx)
         print(counts)

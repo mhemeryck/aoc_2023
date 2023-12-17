@@ -1,3 +1,5 @@
+import enum
+
 import numpy as np
 
 DATA = """.....
@@ -6,90 +8,162 @@ DATA = """.....
 .L-J.
 ....."""
 
-DATA = """..F7.
-.FJ|.
-SJ.L7
-|F--J
-LJ..."""
+# DATA = """..F7.
+# .FJ|.
+# SJ.L7
+# |F--J
+# LJ..."""
 
-DATA = """F-J
-JS7
--J|"""
+# DATA = """F-J
+# JS7
+# -J|"""
 
 FILENAME: str = "input.txt"
 with open(FILENAME, "r") as fh:
     DATA = fh.read()
 
 
-DATA = """FF7FSF7F7F7F7F7F---7
-L|LJ||||||||||||F--J
-FL-7LJLJ||||||LJL-77
-F--JF--7||LJLJ7F7FJ-
-L---JF-JLJ.||-FJLJJ7
-|F|F-JF---7F7-L7L|7|
-|FFJF7L7F-JF7|JL---7
-7-L-JL7||F7|L7F-7F7|
-L.L7LFJ|||||FJL7||LJ
-L7JLJL-JLJLJL--JLJ.L"""
+# DATA = """FF7FSF7F7F7F7F7F---7
+# L|LJ||||||||||||F--J
+# FL-7LJLJ||||||LJL-77
+# F--JF--7||LJLJ7F7FJ-
+# L---JF-JLJ.||-FJLJJ7
+# |F|F-JF---7F7-L7L|7|
+# |FFJF7L7F-JF7|JL---7
+# 7-L-JL7||F7|L7F-7F7|
+# L.L7LFJ|||||FJL7||LJ
+# L7JLJL-JLJLJL--JLJ.L"""
 
 
-def bound_check(x: int, y: int, x_max: int, y_max: int) -> bool:
-    return 0 <= x < x_max and 0 <= y < y_max
+MAZE = np.array([np.array([c for c in line]) for line in DATA.splitlines()])
+X_MAX, Y_MAX = MAZE.shape
+
+
+class Direction(enum.Enum):
+    NORTH = 1
+    EAST = 2
+    WEST = 3
+    SOUTH = 4
+
+
+def bound_check(x: int, y: int) -> bool:
+    return 0 <= x < X_MAX and 0 <= y < Y_MAX
+
+
+def north(idx):
+    new = idx[0] - 1, idx[1]
+    if bound_check(*new):
+        return new
+
+
+def south(idx):
+    new = idx[0] + 1, idx[1]
+    if bound_check(*new):
+        return new
+
+
+def east(idx):
+    new = idx[0], idx[1] + 1
+    if bound_check(*new):
+        return new
+
+
+def west(idx):
+    new = idx[0], idx[1] - 1
+    if bound_check(*new):
+        return new
+
+
+def find_first(idx):
+    north_idx = north(idx)
+    if north_idx:
+        value = MAZE[north_idx]
+        if value in ("7", "F", "|"):
+            return north_idx, Direction.NORTH
+
+    south_idx = south(idx)
+    if south_idx:
+        value = MAZE[south_idx]
+        if value in ("J", "L", "|"):
+            return south_idx, Direction.SOUTH
+
+    east_idx = east(idx)
+    if east_idx:
+        value = MAZE[east_idx]
+        if value in ("J", "7", "-"):
+            return east_idx, Direction.EAST
+
+    west_idx = west(idx)
+    if west_idx:
+        value = MAZE[west_idx]
+        if value in ("L", "F", "-"):
+            return west_idx, Direction.WEST
+
+    return None, None
 
 
 def main() -> None:
-    maze = np.array([np.array([c for c in line]) for line in DATA.splitlines()])
+    # MAZE = np.array([np.array([c for c in line]) for line in DATA.splitlines()])
 
-    # init the counts
-    counts = np.zeros(maze.shape, dtype=np.int64)
-    # all non-pipe locations are negative
-    counts[maze == "."] = -1
+    seed_idx = np.where(MAZE == "S")
+    seed = MAZE[seed_idx]
 
-    seed_idx = np.where(maze == "S")
-    # keep a stack of candidates to check
-    candidates = [(seed_idx[0][0], seed_idx[1][0])]
-    while candidates:
-        can_idx = candidates.pop()
-        can = counts[can_idx]
-        # north
-        north_idx = can_idx[0] - 1, can_idx[1]
-        if bound_check(north_idx[0], north_idx[1], maze.shape[0], maze.shape[1]):
-            north = maze[north_idx]
-            if (counts[north_idx] == 0 or counts[north_idx] > can) and north in ("7", "F", "|"):
-                counts[north_idx] = can + 1
-                candidates.append(north_idx)
-        # south
-        south_idx = can_idx[0] + 1, can_idx[1]
-        if bound_check(south_idx[0], south_idx[1], maze.shape[0], maze.shape[1]):
-            south = maze[south_idx]
-            if (counts[south_idx] == 0 or counts[south_idx] > can) and south in ("J", "L", "|"):
-                counts[south_idx] = can + 1
-                candidates.append(south_idx)
-        # east
-        east_idx = can_idx[0], can_idx[1] + 1
-        if bound_check(east_idx[0], east_idx[1], maze.shape[0], maze.shape[1]):
-            east = maze[east_idx]
-            if (counts[east_idx] == 0 or counts[east_idx] > can) and east in ("J", "7", "-"):
-                counts[east_idx] = can + 1
-                candidates.append(east_idx)
-        # west
-        west_idx = can_idx[0], can_idx[1] - 1
-        if bound_check(west_idx[0], west_idx[1], maze.shape[0], maze.shape[1]):
-            west = maze[west_idx]
-            if (counts[west_idx] == 0 or counts[west_idx] > can) and west in ("L", "F", "-"):
-                counts[west_idx] = can + 1
-                candidates.append(west_idx)
-        # breakpoint()
-        # print(
-        #     counts[
-        #         np.max([can_idx[0] - 10, 0]) : np.min([can_idx[0] + 11, counts.shape[0]]),
-        #         np.max([can_idx[1] - 10, 0]) : np.min([can_idx[1] + 11, counts.shape[1]]),
-        #     ]
-        # )
-        # print(counts)
+    seed_idx = (seed_idx[0][0], seed_idx[1][0])
+    # find first neighbor
+    current, direction = find_first(seed_idx)
+    if current is None:
+        return
+    path = [current]
 
-    result = np.max(counts)
-    print("part 1: max value", result)
+    while MAZE[current] != seed:
+        match MAZE[current], direction:
+            case "S":
+                break
+            case "7", Direction.EAST:
+                current, direction = south(current), Direction.SOUTH
+            case "7", Direction.NORTH:
+                current, direction = west(current), Direction.WEST
+            case "|", Direction.SOUTH:
+                current, direction = south(current), Direction.SOUTH
+            case "|", Direction.NORTH:
+                current, direction = north(current), Direction.NORTH
+            case "-", Direction.EAST:
+                current, direction = east(current), Direction.EAST
+            case "-", Direction.WEST:
+                current, direction = west(current), Direction.WEST
+            case "J", Direction.SOUTH:
+                current, direction = west(current), Direction.WEST
+            case "J", Direction.EAST:
+                current, direction = north(current), Direction.NORTH
+            case "F", Direction.WEST:
+                current, direction = south(current), Direction.SOUTH
+            case "F", Direction.NORTH:
+                current, direction = east(current), Direction.EAST
+            case "L", Direction.SOUTH:
+                current, direction = east(current), Direction.EAST
+            case "L", Direction.WEST:
+                current, direction = north(current), Direction.NORTH
+
+        # print(current, direction, MAZE[current])
+        if current:
+            path.append(current)
+
+    result = len(path) // 2
+    print(f"Result part 1: {result}")
+    # part 2: area
+
+    # shoelace formula: sum of determinants
+    points = np.array(path).T
+    area = 0
+    for k in range(points.shape[1] - 2):
+        area += np.linalg.det(points[:, k : k + 2])
+    # last and first point
+    area += np.linalg.det(points[:, [points.shape[1] - 1, 0]])
+    outer = int(np.abs(area) // 2)
+
+    # pick formula:
+    i = outer - result + 1
+    print(f"Result part 2: inner number of points: {i}")
 
 
 if __name__ == "__main__":

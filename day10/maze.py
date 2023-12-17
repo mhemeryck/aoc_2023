@@ -14,25 +14,33 @@ DATA = """.....
 # |F--J
 # LJ..."""
 
-# DATA = """F-J
-# JS7
-# -J|"""
+
+DATA = """FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L"""
+
+
+DATA = """..........
+.S------7.
+.|F----7|.
+.||....||.
+.||....||.
+.|L-7F-J|.
+.|..||..|.
+.L--JL--J.
+.........."""
+
 
 FILENAME: str = "input.txt"
 with open(FILENAME, "r") as fh:
     DATA = fh.read()
-
-
-# DATA = """FF7FSF7F7F7F7F7F---7
-# L|LJ||||||||||||F--J
-# FL-7LJLJ||||||LJL-77
-# F--JF--7||LJLJ7F7FJ-
-# L---JF-JLJ.||-FJLJJ7
-# |F|F-JF---7F7-L7L|7|
-# |FFJF7L7F-JF7|JL---7
-# 7-L-JL7||F7|L7F-7F7|
-# L.L7LFJ|||||FJL7||LJ
-# L7JLJL-JLJLJL--JLJ.L"""
 
 
 MAZE = np.array([np.array([c for c in line]) for line in DATA.splitlines()])
@@ -153,16 +161,16 @@ def main() -> None:
     # part 2: area
 
     # shoelace formula: sum of determinants
-    points = np.array(path).T
+    points = np.array(path)[::-1].T
     area = 0
-    for k in range(points.shape[1] - 2):
-        area += np.linalg.det(points[:, k : k + 2])
+    for k in range(points.shape[1] - 1):
+        area += np.linalg.det(points[:, [k, k + 1]])
     # last and first point
     area += np.linalg.det(points[:, [points.shape[1] - 1, 0]])
-    outer = int(np.abs(area) // 2)
+    outer = int(np.abs(np.round(area)) // 2)
 
     # pick formula:
-    i = outer - result + 1
+    i = outer - (len(path) // 2) + 1
     print(f"Result part 2: inner number of points: {i}")
 
 

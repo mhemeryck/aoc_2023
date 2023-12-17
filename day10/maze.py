@@ -167,9 +167,10 @@ def main() -> None:
         area += np.linalg.det(points[:, [k, k + 1]])
     # last and first point
     area += np.linalg.det(points[:, [points.shape[1] - 1, 0]])
+    # abs value, since we the determinants could have been negative, because of the direction we loop through the points
     outer = int(np.abs(np.round(area)) // 2)
 
-    # pick formula:
+    # pick formula: relation between outer area (outer), outer number of points (path) and inner number of points (i)
     i = outer - (len(path) // 2) + 1
     print(f"Result part 2: inner number of points: {i}")
 
